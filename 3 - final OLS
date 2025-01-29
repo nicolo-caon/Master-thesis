@@ -1,0 +1,94 @@
+#OLS for the 6 months yield, code is the same for the other yields, only change datasets
+# Load the libraries
+library(dplyr)
+library(lubridate)
+library(tidyr)
+
+# Read the dependent variable data
+ITA_6M_YELD <- read.csv("./MyThesis/6 months yield/6m_yield_ita.csv")
+
+# Read independent variable data
+GER_6M_YELD <- read.csv("./6 months yield/6m_yield_ger.csv")
+BOLLETTINI_SENT_INDEX_1 <- read.csv("./MyThesis/sent index ita/Daily_Bollett_Score_Gardner_et_al.csv")
+BOLLETTINI_SENT_INDEX_2 <- read.csv("./MyThesis/sent index ita/Daily_Bollett_Score_Bennani_Neuenkirch.csv")
+
+ITA_PMI <- read.csv("./Macro Data/ITA_PMI_clean.csv")
+ITA_UMENPLOYMENT <- read.csv("./Macro Data/ITA_UMENPLOYMENT_clean.csv")
+ITA_REAL_GDP <- read.csv("C./Macro Data/ITA_REAL_GDP_clean.csv")
+ITA_CPI <- read.csv("./Macro Data/ITA_CPI_clean.csv")
+ITA_CONSUMER_CONF <- read.csv("./Macro Data/ITA_CONSUMER_CONF_clean.csv")
+ITA_DEF <- read.csv("./Macro Data/ITA_DEF.csv")
+ITA_POL_EVENT <- read.csv("./Macro Data/Italian_relevant_political_event.csv")
+ITA_REC <- read.csv("./Macro Data/ITA_RECESS.csv")
+
+GER_PMI <- read.csv("./Macro Data/GER_PMI_clean.csv")
+GER_UMENPLOYMENT <- read.csv("./Macro Data/GER_UMENPLOYMENT_clean.csv")
+GER_REAL_GDP <- read.csv("./Macro Data/GER_REAL_GDP_clean.csv")
+GER_CPI <- read.csv("./Macro Data/GER_CPI_clean.csv")
+GER_REC <- read.csv("./Macro Data/GER_RECESS.csv")
+
+# Convert 'date' columns to Date objects
+ITA_6M_YELD$Date <- dmy(ITA_6M_YELD$Date)
+GER_6M_YELD$Date <- dmy(GER_6M_YELD$Date)
+BOLLETTINI_SENT_INDEX_1$Date <- dmy(BOLLETTINI_SENT_INDEX_1$Date)
+BOLLETTINI_SENT_INDEX_2$Date <- dmy(BOLLETTINI_SENT_INDEX_2$Date)
+ITA_PMI$Date <- dmy(ITA_PMI$Date)
+ITA_UMENPLOYMENT$Date <- dmy(ITA_UMENPLOYMENT$Date)
+ITA_REAL_GDP$Date <- dmy(ITA_REAL_GDP$Date)
+ITA_CPI$Date <- dmy(ITA_CPI$Date)
+ITA_CONSUMER_CONF$Date <- dmy(ITA_CONSUMER_CONF$Date)
+ITA_DEF$Date <- dmy(ITA_DEF$Date)
+ITA_REC$Date <- dmy(ITA_REC$Date)
+ITA_POL_EVENT$Date <- dmy(ITA_POL_EVENT$Date)
+GER_PMI$Date <- dmy(GER_PMI$Date)
+GER_UMENPLOYMENT$Date <- dmy(GER_UMENPLOYMENT$Date)
+GER_REAL_GDP$Date <- dmy(GER_REAL_GDP$Date)
+GER_CPI$Date <- dmy(GER_CPI$Date)
+GER_REC$Date <- dmy(GER_REC$Date)
+
+# Merge datasets using full joins
+merged_data <- ITA_6M_YELD %>%
+  full_join(GER_6M_YELD, by = "Date") %>%
+  full_join(BOLLETTINI_SENT_INDEX_1, by = "Date") %>%
+  full_join(BOLLETTINI_SENT_INDEX_2, by = "Date") %>%
+  full_join(ITA_PMI, by = "Date") %>%
+  full_join(ITA_UMENPLOYMENT, by = "Date") %>%
+  full_join(ITA_REAL_GDP, by = "Date") %>%
+  full_join(ITA_CPI, by = "Date") %>%
+  full_join(ITA_CONSUMER_CONF, by = "Date") %>%
+  full_join(ITA_DEF, by = "Date") %>%
+  full_join(ITA_POL_EVENT, by = "Date") %>%
+  full_join(ITA_REC, by = "Date") %>%
+  full_join(GER_PMI, by = "Date") %>%
+  full_join(GER_UMENPLOYMENT, by = "Date") %>%
+  full_join(GER_REAL_GDP, by = "Date") %>%
+  full_join(GER_CPI, by = "Date") %>%
+  full_join(GER_REC, by = "Date")%>%
+  filter(!is.na(close_ita) & close_ita != 0 & Date <= as.Date("2024-09-30"))
+
+# Replace all NA values with 0
+merged_data[is.na(merged_data)] <- 0
+print(merged_data)
+#############################################################################################
+# Select relevant columns for regression with Gardner et al sentiment index score and Germany
+#############################################################################################
+Gardner_et_al_germany_regression_data <- merged_data %>%
+  select(Date, close_ita  , close_ger ,
+         BN_score, G_index_inflation, G_index_output, G_index_labor, G_index_financial, 
+         ITA_PMI_clean, ITA_UMENPLOYMENT_clean, ITA_REAL_GDP_clean, ITA_CPI_clean, ITA_CONSUMER_CONF_clean, 
+         Ita_deficit, pol_dummy, ITARECD, 
+         GER_PMI_clean, GER_UMENPLOYMENT_clean, GER_REAL_GDP_clean, GER_CPI_clean, DEURECD)
+
+
+# Convert variables to numeric if they aren't already
+Gardner_et_al_germany_regression_data <- Gardner_et_al_germany_regression_data %>%
+  mutate(across(-Date, as.numeric))
+
+# Run the regression model with all selected predictors
+model_Gardner_et_al_GERMANY <- lm(close_ita  ~ .,
+                                     data = Gardner_et_al_germany_regression_data %>% select(-Date))
+
+###########################################
+# View the summary of the regression models
+###########################################
+summary(model_Gardner_et_al_GERMANY)
