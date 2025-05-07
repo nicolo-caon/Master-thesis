@@ -2,7 +2,6 @@
 #libraries
 library(dplyr)
 library(tm)
-library(dplyr)
 library(lubridate)
 
 ## Reading in the data 
