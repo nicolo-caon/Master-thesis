@@ -44,12 +44,12 @@ calculate_score <- function(text, keywords) {
 Statements <- Statements %>%
   rowwise() %>%
   mutate(
-    Score = calculate_score(`Announcement Translated`, Bias_keywords) # Backticks are required
+    Score = calculate_score(`Announcement Translated`, Bias_keywords) 
   ) %>%
   ungroup()
 
 # Specify the directory to save the file
-output_directory <- .\\MyThesis\\sent index ita"  # Replace with your desired path
+output_directory <- .\\MyThesis\\sent index ita" 
 output_file <- file.path(output_directory, "Macro_Proj__Score_Bennani_Neuenkirch.csv")
 
 # Save the updated Statements dataset with scores
