@@ -1,4 +1,4 @@
-#Sentiment index for the Italian Central Bank based on the work of Jardner et al. 2022. Developed as part of a group project, revised for the scope of my master thesis
+#Sentiment index for the Italian Central Bank based on the work of Gardner et al. 2022. Developed as part of a group project, revised for the scope of my master thesis
 #libraries
 library(dplyr)
 library(tm)
