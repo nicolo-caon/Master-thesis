@@ -46,7 +46,7 @@ GER_REAL_GDP$Date <- dmy(GER_REAL_GDP$Date)
 GER_CPI$Date <- dmy(GER_CPI$Date)
 GER_REC$Date <- dmy(GER_REC$Date)
 
-# Merge datasets using full joins
+# Merge datasets 
 merged_data <- ITA_6M_YELD %>%
   full_join(GER_6M_YELD, by = "Date") %>%
   full_join(BOLLETTINI_SENT_INDEX_1, by = "Date") %>%
